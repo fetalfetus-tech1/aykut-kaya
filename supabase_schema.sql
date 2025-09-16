@@ -108,6 +108,81 @@ CREATE INDEX idx_comments_game_review ON comments(game_review_id);
 CREATE INDEX idx_comments_created_at ON comments(created_at);
 
 -- Row Level Security (RLS) Policies
+
+-- Enable RLS on all tables
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE forum_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE game_reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+
+-- Profiles policies
+CREATE POLICY "Public profiles are viewable by everyone" ON profiles
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can insert their own profile" ON profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" ON profiles
+  FOR UPDATE USING (auth.uid() = id);
+
+-- Blog posts policies
+CREATE POLICY "Published blog posts are viewable by everyone" ON blog_posts
+  FOR SELECT USING (published = true);
+
+CREATE POLICY "Draft blog posts are viewable by author" ON blog_posts
+  FOR SELECT USING (auth.uid() = author_id);
+
+CREATE POLICY "Users can create blog posts" ON blog_posts
+  FOR INSERT WITH CHECK (auth.uid() = author_id);
+
+CREATE POLICY "Authors can update their own posts" ON blog_posts
+  FOR UPDATE USING (auth.uid() = author_id);
+
+CREATE POLICY "Authors can delete their own posts" ON blog_posts
+  FOR DELETE USING (auth.uid() = author_id);
+
+-- Forum posts policies
+CREATE POLICY "Forum posts are viewable by everyone" ON forum_posts
+  FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can create forum posts" ON forum_posts
+  FOR INSERT WITH CHECK (auth.uid() = author_id);
+
+CREATE POLICY "Authors can update their own forum posts" ON forum_posts
+  FOR UPDATE USING (auth.uid() = author_id);
+
+CREATE POLICY "Authors can delete their own forum posts" ON forum_posts
+  FOR DELETE USING (auth.uid() = author_id);
+
+-- Game reviews policies
+CREATE POLICY "Published game reviews are viewable by everyone" ON game_reviews
+  FOR SELECT USING (published = true);
+
+CREATE POLICY "Draft game reviews are viewable by author" ON game_reviews
+  FOR SELECT USING (auth.uid() = author_id);
+
+CREATE POLICY "Users can create game reviews" ON game_reviews
+  FOR INSERT WITH CHECK (auth.uid() = author_id);
+
+CREATE POLICY "Authors can update their own reviews" ON game_reviews
+  FOR UPDATE USING (auth.uid() = author_id);
+
+CREATE POLICY "Authors can delete their own reviews" ON game_reviews
+  FOR DELETE USING (auth.uid() = author_id);
+
+-- Comments policies
+CREATE POLICY "Comments are viewable by everyone" ON comments
+  FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can create comments" ON comments
+  FOR INSERT WITH CHECK (auth.uid() = author_id);
+
+CREATE POLICY "Authors can update their own comments" ON comments
+  FOR UPDATE USING (auth.uid() = author_id);
+
+CREATE POLICY "Authors can delete their own comments" ON comments
+  FOR DELETE USING (auth.uid() = author_id);
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE forum_posts ENABLE ROW LEVEL SECURITY;

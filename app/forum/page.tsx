@@ -62,7 +62,14 @@ export default function ForumPage() {
     }
 
     try {
-      const { error } = await supabase
+      console.log('Creating post with data:', {
+        title: newPost.title,
+        content: newPost.content,
+        category: newPost.category,
+        author_id: user.id
+      })
+
+      const { data, error } = await supabase
         .from('forum_posts')
         .insert([{
           title: newPost.title,
@@ -70,15 +77,22 @@ export default function ForumPage() {
           category: newPost.category,
           author_id: user.id
         }])
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      console.log('Post created successfully:', data)
 
       setNewPost({ title: '', content: '', category: '' })
       setShowCreateForm(false)
       loadPosts()
       alert('Forum yazısı oluşturuldu!')
-    } catch (error) {
-      alert('Hata: ' + error)
+    } catch (error: any) {
+      console.error('Full error details:', error)
+      alert('Hata oluştu: ' + (error.message || error.details || 'Bilinmeyen hata'))
     }
   }
 
