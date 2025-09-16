@@ -12,7 +12,7 @@ interface BlogPost {
   category: string
   tags: string[]
   created_at: string
-  profiles: { username: string }
+  author_name: string
 }
 
 export default function BlogPage() {
@@ -27,15 +27,19 @@ export default function BlogPage() {
     try {
       const { data, error } = await supabase
         .from('blog_posts')
-        .select(`
-          *,
-          profiles(username)
-        `)
+        .select('*')
         .eq('published', true)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setPosts(data || [])
+
+      // Posts'ları dönüştür (profiles join kaldırıldı)
+      const transformedPosts = (data || []).map(post => ({
+        ...post,
+        author_name: 'Anonim' // Şimdilik anonim
+      }))
+
+      setPosts(transformedPosts)
     } catch (error) {
       console.error('Blog yazıları yüklenirken hata:', error)
     }
@@ -79,7 +83,7 @@ export default function BlogPage() {
                 <h2 className="text-xl font-bold mb-3">{post.title}</h2>
                 
                 <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
-                  <span>{post.profiles?.username}</span>
+                  <span>{post.author_name}</span>
                   <span>•</span>
                   <span>{new Date(post.created_at).toLocaleDateString('tr-TR')}</span>
                 </div>

@@ -14,7 +14,7 @@ interface ForumPost {
   replies_count: number
   views: number
   created_at: string
-  profiles: { username: string }
+  author_name: string
 }
 
 export default function ForumPage() {
@@ -36,14 +36,18 @@ export default function ForumPage() {
     try {
       const { data, error } = await supabase
         .from('forum_posts')
-        .select(`
-          *,
-          profiles(username)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setPosts(data || [])
+
+      // Posts'ları dönüştür (profiles join kaldırıldı)
+      const transformedPosts = (data || []).map(post => ({
+        ...post,
+        author_name: 'Anonim' // Şimdilik anonim
+      }))
+
+      setPosts(transformedPosts)
     } catch (error) {
       console.error('Forum postları yüklenirken hata:', error)
     }
@@ -219,7 +223,7 @@ export default function ForumPage() {
                         {post.category}
                       </span>
                       <span className="text-gray-400 text-sm">
-                        {post.profiles?.username}
+                        {post.author_name}
                       </span>
                       <span className="text-gray-400 text-sm">•</span>
                       <span className="text-gray-400 text-sm">
