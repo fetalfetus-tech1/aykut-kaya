@@ -35,20 +35,20 @@ export default function ForumPage() {
 
   const loadPosts = async () => {
     try {
-      // forum_stars ve forum_replies ilişkili tabloları doğru şekilde join'le
+      // Önce forum_stars joinini ekle
       const { data, error } = await supabase
         .from('forum_posts')
-        .select('*, forum_stars:forum_stars(*), forum_replies:forum_replies(*)')
+        .select('*, forum_stars(*)')
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      // Posts'ları dönüştür (profil join ile yazar adı eklenebilir)
+      // Posts'ları dönüştür
       const transformedPosts = (data || []).map(post => ({
         ...post,
         author_name: 'Anonim',
         stars: Array.isArray(post.forum_stars) ? post.forum_stars.length : 0,
-        replies_count: Array.isArray(post.forum_replies) ? post.forum_replies.length : 0,
+        replies_count: 0,
       }))
 
       setPosts(transformedPosts)
