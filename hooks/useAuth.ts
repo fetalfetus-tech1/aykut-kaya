@@ -22,38 +22,43 @@ export function useAuth() {
 
   const loadUserProfile = async (authUser: User) => {
     try {
-      const { data: profile, error } = await supabase
+      // Önce profile var mı kontrol et
+      const { data: existingProfile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authUser.id)
         .single()
 
-      if (profile) {
-        setUser({ ...authUser, profile })
-      } else {
-        // Profile yoksa otomatik oluştur
-        console.log('Profile bulunamadı, otomatik oluşturuluyor...')
-        const { data: newProfile, error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authUser.id,
-            username: authUser.email?.split('@')[0] || `user_${authUser.id.slice(0, 8)}`,
-            full_name: '',
-            role: 'user'
-          })
-          .select()
-          .single()
+      if (existingProfile) {
+        setUser({ ...authUser, profile: existingProfile })
+        return
+      }
 
-        if (newProfile) {
-          setUser({ ...authUser, profile: newProfile })
-        } else {
-          console.error('Profile oluşturma hatası:', insertError)
-          setUser(authUser)
-        }
+      // Profile yoksa upsert ile oluştur (conflict olursa güncelle)
+      console.log('Profile bulunamadı, upsert ile oluşturuluyor...')
+      const { data: newProfile, error: upsertError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: authUser.id,
+          username: authUser.email?.split('@')[0] || `user_${authUser.id.slice(0, 8)}`,
+          full_name: '',
+          role: 'user'
+        }, {
+          onConflict: 'id'
+        })
+        .select()
+        .single()
+
+      if (newProfile) {
+        setUser({ ...authUser, profile: newProfile })
+      } else {
+        console.error('Profile upsert hatası:', upsertError)
+        // Hata durumunda profile olmadan devam et
+        setUser(authUser)
       }
     } catch (error) {
       console.error('Profile yüklenirken hata:', error)
-      // Hata durumunda da user'ı set et
+      // Hata durumunda profile olmadan devam et
       setUser(authUser)
     }
   }
