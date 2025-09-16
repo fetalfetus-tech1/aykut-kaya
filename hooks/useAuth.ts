@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -19,6 +19,7 @@ interface AuthUser extends User {
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const initializedRef = useRef(false)
 
   const loadUserProfile = async (authUser: User) => {
     try {
@@ -35,10 +36,7 @@ export function useAuth() {
 
       if (existingProfile) {
         console.log('🔥 loadUserProfile: Setting user with profile')
-        // State güncellemesini garantiye almak için setTimeout kullan
-        setTimeout(() => {
-          setUser({ ...authUser, profile: existingProfile })
-        }, 0)
+        setUser({ ...authUser, profile: existingProfile })
         return
       }
 
@@ -61,25 +59,25 @@ export function useAuth() {
 
       if (newProfile) {
         console.log('🔥 loadUserProfile: Setting user with new profile')
-        setTimeout(() => {
-          setUser({ ...authUser, profile: newProfile })
-        }, 0)
+        setUser({ ...authUser, profile: newProfile })
       } else {
         console.error('🔥 loadUserProfile: Failed to create profile, setting user without profile')
-        setTimeout(() => {
-          setUser(authUser)
-        }, 0)
+        setUser(authUser)
       }
     } catch (error) {
       console.error('🔥 loadUserProfile: Exception:', error)
-      setTimeout(() => {
-        setUser(authUser)
-      }, 0)
+      setUser(authUser)
     }
   }
 
   useEffect(() => {
+    if (initializedRef.current) {
+      console.log('🔥 useAuth: Already initialized, skipping...')
+      return
+    }
+    
     console.log('🔥 useAuth: Initializing...')
+    initializedRef.current = true
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
