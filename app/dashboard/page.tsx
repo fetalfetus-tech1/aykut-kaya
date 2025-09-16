@@ -132,32 +132,50 @@ export default function DashboardPage() {
     return null
   }
 
-  // Profil kontrolü kaldırıldı - profile yoksa da dashboard'a girebilir
+  // Profil eksik alan kontrolü
+  const isProfileIncomplete =
+    !user?.profile?.full_name ||
+    !user?.profile?.avatar_url ||
+    !user?.profile?.bio;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">👤 Dashboard</h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Hoş geldin, {user?.profile?.username || user?.email || 'Misafir'}!
-            </p>
-            {user && !user.profile && (
-              <div className="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg">
-                <div className="flex items-center">
-                  <span className="text-yellow-800 dark:text-yellow-200 text-sm">
-                    ⚠️ Profiliniz henüz tamamlanmamış.
-                    <Link href="/profile/setup" className="underline hover:text-yellow-600 dark:hover:text-yellow-300 ml-1">
-                      Profilinizi tamamlayın
-                    </Link>
-                  </span>
+        {/* Modern Profil Kartı */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+          <div className="flex items-center gap-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 w-full md:w-auto">
+            <div className="flex-shrink-0">
+              {user?.profile?.avatar_url ? (
+                <img
+                  src={user.profile.avatar_url}
+                  alt="Avatar"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-500 shadow-md"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-4xl text-white font-bold border-4 border-blue-500 shadow-md">
+                  {user?.profile?.username?.[0]?.toUpperCase() || '👤'}
                 </div>
+              )}
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                {user?.profile?.full_name || user?.profile?.username || user?.email}
+                {user?.profile?.role === 'admin' && <span className="ml-2 px-2 py-1 rounded bg-red-600 text-white text-xs">Admin</span>}
+                {user?.profile?.role === 'moderator' && <span className="ml-2 px-2 py-1 rounded bg-yellow-500 text-white text-xs">Moderatör</span>}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-2">{user?.profile?.bio || <span className="italic text-gray-400">Henüz biyografi eklenmedi.</span>}</p>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/profile/edit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                  Profili Düzenle
+                </Link>
+                {isProfileIncomplete && (
+                  <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded text-xs font-semibold">
+                    Profiliniz eksik! <Link href="/profile/edit" className="underline">Tamamla</Link>
+                  </span>
+                )}
               </div>
-            )}
+            </div>
           </div>
-
           {user && isAdmin && (
             <Link
               href="/admin"

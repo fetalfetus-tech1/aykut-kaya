@@ -80,7 +80,8 @@ interface Profile {
   username: string
   full_name: string
   role: string
-  avatar_url: string
+  avatar_url: string | null
+  bio: string | null
 }
 
 interface AuthUser extends User {

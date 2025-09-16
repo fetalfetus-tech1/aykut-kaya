@@ -15,6 +15,7 @@ interface ForumPost {
   views: number
   created_at: string
   author_name: string
+  stars?: number
 }
 
 export default function ForumPage() {
@@ -34,9 +35,10 @@ export default function ForumPage() {
 
   const loadPosts = async () => {
     try {
+      // forum_stars tablosundan yıldız sayısını da çek
       const { data, error } = await supabase
         .from('forum_posts')
-        .select('*')
+        .select('*, forum_stars(count), forum_replies(count)')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -44,7 +46,9 @@ export default function ForumPage() {
       // Posts'ları dönüştür (profiles join kaldırıldı)
       const transformedPosts = (data || []).map(post => ({
         ...post,
-        author_name: 'Anonim' // Şimdilik anonim
+        author_name: 'Anonim', // Şimdilik anonim
+        stars: post.forum_stars?.[0]?.count || 0,
+        replies_count: post.forum_replies?.[0]?.count || 0,
       }))
 
       setPosts(transformedPosts)
@@ -116,7 +120,6 @@ export default function ForumPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold">💬 Forum</h1>
-          
           {user ? (
             <button
               onClick={() => setShowCreateForm(!showCreateForm)}
@@ -149,7 +152,6 @@ export default function ForumPage() {
                   placeholder="Konu başlığı..."
                 />
               </div>
-              
               <div>
                 <label className="block text-sm font-medium mb-2">Kategori</label>
                 <select
@@ -165,7 +167,6 @@ export default function ForumPage() {
                   <option value="diger">Diğer</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-2">İçerik</label>
                 <textarea
@@ -176,7 +177,6 @@ export default function ForumPage() {
                   placeholder="Konu içeriği..."
                 />
               </div>
-
               <div className="flex justify-end space-x-4">
                 <button
                   onClick={() => setShowCreateForm(false)}
@@ -215,34 +215,30 @@ export default function ForumPage() {
         ) : (
           <div className="space-y-4">
             {posts.map((post) => (
-              <div key={post.id} className="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs bg-purple-600 px-2 py-1 rounded">
-                        {post.category}
-                      </span>
-                      <span className="text-gray-400 text-sm">
-                        {post.author_name}
-                      </span>
-                      <span className="text-gray-400 text-sm">•</span>
-                      <span className="text-gray-400 text-sm">
-                        {new Date(post.created_at).toLocaleDateString('tr-TR')}
-                      </span>
+              <Link key={post.id} href={{ pathname: '/forum/topic', query: { id: post.id } }} className="block">
+                <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors cursor-pointer">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs bg-purple-600 px-2 py-1 rounded">{post.category}</span>
+                        <span className="text-gray-400 text-sm">{post.author_name}</span>
+                        <span className="text-gray-400 text-sm">•</span>
+                        <span className="text-gray-400 text-sm">{new Date(post.created_at).toLocaleDateString('tr-TR')}</span>
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">{post.title}</h3>
+                      <p className="text-gray-300 mb-3">{post.content.substring(0, 200)}...</p>
                     </div>
-                    
-                    <h3 className="text-xl font-bold mb-2">{post.title}</h3>
-                    <p className="text-gray-300 mb-3">
-                      {post.content.substring(0, 200)}...
-                    </p>
-                  </div>
-                  
-                  <div className="text-right text-sm text-gray-400">
-                    <div>{post.replies_count} yanıt</div>
-                    <div>{post.views} görüntüleme</div>
+                    <div className="flex flex-col items-end gap-2 text-sm text-gray-400">
+                      <div className="flex items-center gap-1">
+                        <span className="text-yellow-400">⭐</span>
+                        <span>{post.stars || 0}</span>
+                      </div>
+                      <div>{post.replies_count} yanıt</div>
+                      <div>{post.views} görüntüleme</div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
