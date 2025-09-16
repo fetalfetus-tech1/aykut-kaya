@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import Link from 'next/link'
@@ -23,11 +22,9 @@ interface ForumReply {
   author_name: string
 }
 
-export default function ForumTopicPage() {
+export default function ForumTopicPage({ params }: { params: { id: string } }) {
   const { user } = useAuth()
-  const router = useRouter()
-  const params = useSearchParams()
-  const postId = params.get('id')
+  const postId = params.id
   const [post, setPost] = useState<ForumPost | null>(null)
   const [replies, setReplies] = useState<ForumReply[]>([])
   const [replyContent, setReplyContent] = useState('')
