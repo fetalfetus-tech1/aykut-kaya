@@ -42,7 +42,7 @@ export default function ForumPage() {
       // forum_stars ve profiles join
       const { data, error } = await supabase
         .from('forum_posts')
-        .select('*, profiles:author_id(username), forum_stars!fk_forum_stars_post(*)')
+        .select('*, profiles:author_id(username,avatar_url), forum_stars!fk_forum_stars_post(*)')
         .order('created_at', { ascending: false })
 
       if (error) throw error
