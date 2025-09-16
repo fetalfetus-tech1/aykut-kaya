@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "title": "The Witcher 3: Wild Hunt",
+    "slug": "the-witcher-3-wild-hunt",
+    "thumbnail": "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop",
+    "shortDesc": "Ödüllü RPG şaheserinde Geralt of Rivia olarak destansı bir maceraya atılın.",
+    "fullDesc": "The Witcher 3: Wild Hunt, anlamlı seçimler ve etkili sonuçlarla dolu görsel açıdan çarpıcı bir fantezi evreninde geçen açık dünya RPG'sidir. Witcher'da, nesli tükenmekte olan canavar avcılarından biri olan Geralt of Rivia'yı oynayacak ve savaş yorgunu bir dünyada destansı bir yolculuğa çıkacaksınız. 100 saatin üzerinde ana hikaye ve yan görev oynanışıyla The Witcher 3, benzersiz bir deneyim sunuyor.",
+    "rating": 9.8,
+    "categories": ["RPG", "Açık Dünya", "Fantastik"]
+  },
+  {
+    "id": 2,
+    "title": "Cyberpunk 2077",
+    "slug": "cyberpunk-2077",
+    "thumbnail": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop",
+    "shortDesc": "Night City'de geçen bu sürükleyici cyberpunk macerasında geleceği deneyimleyin.",
+    "fullDesc": "Cyberpunk 2077, güç, glamur ve vücut modifikasyonuna takıntılı megalopolis Night City'de geçen açık dünya aksiyon-macera hikayesidir. Ölümsüzlüğün anahtarı olan eşsiz bir implantın peşinde koşan paralı asker V'yi oynayacaksınız. Karakterinizin siber donanımını, beceri setini ve oyun tarzını özelleştirebilir, yaptığınız seçimlerin hikayeyi ve çevrenizi şekillendirdiği geniş bir şehri keşfedebilirsiniz.",
+    "rating": 8.2,
+    "categories": ["RPG", "Aksiyon", "Bilim Kurgu", "Açık Dünya"]
+  },
+  {
+    "id": 3,
+    "title": "God of War",
+    "slug": "god-of-war",
+    "thumbnail": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=300&fit=crop",
+    "shortDesc": "Kratos ve oğlu Atreus'un Norse mitolojisinden ilhamlı yolculuğunu takip edin.",
+    "fullDesc": "God of War, Kratos ve oğlu Atreus'un Norse mitolojisinin tehlikeli ve çarpıcı dünyasında geçen yolculuğunu anlatan üçüncü şahıs aksiyon-macera oyunudur. Oyuncuyu aksiyona her zamankinden daha yakın getiren omuz üstü serbest kamerayla God of War'daki savaşlar, Kratos'un karşılaşacağı Norse yaratıkları panteonu gibi görkemli, cesur ve zorludur.",
+    "rating": 9.5,
+    "categories": ["Aksiyon", "Macera", "Mitoloji"]
+  },
+  {
+    "id": 4,
+    "title": "Hades",
+    "slug": "hades",
+    "thumbnail": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400&h=300&fit=crop",
+    "shortDesc": "Bu ödüllü roguelike zindan tarayıcısında ölüm tanrısına meydan okuyun.",
+    "fullDesc": "Hades, Supergiant'ın eleştirmenler tarafından beğenilen oyunlarının en iyi yönlerini birleştiren tanrı benzeri rogue-like zindan tarayıcısıdır; Bastion'ın hızlı aksiyonu, Transistor'ın zengin atmosferi ve derinliği ve Pyre'ın karakter odaklı hikaye anlatımı dahil. Bastion, Transistor ve Pyre'ın yaratıcılarından bu rogue-like zindan tarayıcısında, Yeraltı Dünyası'nın ölümsüz Prensi olarak cehennemden kaçmaya çalışın.",
+    "rating": 9.4,
+    "categories": ["Roguelike", "Aksiyon", "Indie", "Mitoloji"]
+  },
+  {
+    "id": 5,
+    "title": "Red Dead Redemption 2",
+    "slug": "red-dead-redemption-2",
+    "thumbnail": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
+    "shortDesc": "Bu destansı Western macerasında haydut çağının son günlerini deneyimleyin.",
+    "fullDesc": "Red Dead Redemption 2, Amerika'nın acımasız kalbinde yaşamın destansı hikayesidir. Oyunun geniş ve atmosferik dünyası aynı zamanda yepyeni bir çevrimiçi çok oyunculu deneyim için de temel oluşturacak. Amerika, 1899. Vahşi batı çağının sonu başlamıştır, kanun kuvvetleri kalan son haydut çetelerini avlamaktadır. Teslim olmayan veya boyun eğmeyenler öldürülmektedir.",
+    "rating": 9.6,
+    "categories": ["Aksiyon", "Macera", "Açık Dünya", "Western"]
+  },
+  {
+    "id": 6,
+    "title": "Horizon Zero Dawn",
+    "slug": "horizon-zero-dawn",
+    "thumbnail": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop",
+    "shortDesc": "Makinelerin hükmettiği post-apokaliptik dünyada mekanik yaratıkları avlayın.",
+    "fullDesc": "Aloy'un makineler tarafından yönetilen gelecek Dünya'sının gizemlerini çözmek için başlattığı efsanevi görevini deneyimleyin. Avınıza karşı yıkıcı taktiksel saldırılar kullanın ve bu ödüllü aksiyon RPG'de görkemli açık dünyayı keşfedin. Doğanın unutulmuş bir uygarlığın kalıntılarını geri aldığı yemyeşil, post-apokaliptik dünyada, insanlık ceplerinin ilkel avcı-toplayıcı kabilelerde yaşamaya devam ettiği bir dünyada.",
+    "rating": 8.9,
+    "categories": ["Aksiyon", "RPG", "Bilim Kurgu", "Açık Dünya"]
+  },
+  {
+    "id": 7,
+    "title": "Elden Ring",
+    "slug": "elden-ring",
+    "thumbnail": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
+    "shortDesc": "FromSoftware'den bu zorlu fantastik aksiyon RPG'de Lands Between'ı keşfedin.",
+    "fullDesc": "YENİ FANTASTİK AKSİYON RPG. Kalk, Lekeli, ve Elden Yüzük'ün gücünü kullanarak Lands Between'da bir Elden Lord olmak için lütufla yönlendiril. Çeşitli durumlarla açık alanların ve karmaşık ve üç boyutlu tasarımlara sahip büyük zindanların sorunsuz bir şekilde bağlandığı geniş bir dünya. Keşfederken, sizi bilinmeyen ve ezici tehditleri keşfetme sevinci bekliyor, bu da yüksek bir başarı hissi yaratıyor.",
+    "rating": 9.7,
+    "categories": ["Aksiyon", "RPG", "Fantastik", "Souls-like"]
+  },
+  {
+    "id": 8,
+    "title": "Ghost of Tsushima",
+    "slug": "ghost-of-tsushima",
+    "thumbnail": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
+    "shortDesc": "Feodal Japonya'da Hayalet olun ve Tsushima'nın özgürlüğü için savaşın.",
+    "fullDesc": "13. yüzyılın sonlarında, Moğol imparatorluğu Doğu'yu fethetme kampanyaları boyunca tüm ulusları harap etmiştir. Tsushima Adası, ana Japonya ile acımasız ve kurnaz general Khotun Khan liderliğindeki büyük Moğol istila filosu arasında tek engel olarak durmaktadır. Ada Moğol saldırısının ilk dalgasının ardından yanarken, cesur samuray savaşçısı Jin Sakai kararlılıkla direnmektedir.",
+    "rating": 9.1,
+    "categories": ["Aksiyon", "Macera", "Açık Dünya", "Samuray"]
+  }
+]
