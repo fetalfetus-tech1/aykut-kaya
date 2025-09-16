@@ -22,15 +22,18 @@ export function useAuth() {
 
   const loadUserProfile = async (authUser: User) => {
     try {
+      console.log('loadUserProfile - Loading profile for user:', authUser.id)
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authUser.id)
         .single()
 
+      console.log('loadUserProfile - Profile data:', profile)
       if (profile) {
         setUser({ ...authUser, profile })
       } else {
+        console.log('loadUserProfile - No profile found, setting user without profile')
         setUser(authUser)
       }
     } catch (error) {
@@ -42,6 +45,7 @@ export function useAuth() {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('useAuth - Initial session:', session)
       if (session?.user) {
         loadUserProfile(session.user)
       } else {
@@ -54,6 +58,7 @@ export function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('useAuth - Auth state change:', _event, session)
       if (session?.user) {
         loadUserProfile(session.user)
       } else {

@@ -33,6 +33,11 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [loadingStats, setLoadingStats] = useState(true)
 
+  // Debug logları
+  console.log('Dashboard - authLoading:', authLoading)
+  console.log('Dashboard - user:', user)
+  console.log('Dashboard - user.profile:', user?.profile)
+
   // Profil kontrolü - eğer profil yoksa setup sayfasına yönlendir
   useEffect(() => {
     if (!authLoading && user && !user.profile) {
