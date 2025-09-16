@@ -215,7 +215,7 @@ export default function ForumPage() {
         ) : (
           <div className="space-y-4">
             {posts.map((post) => (
-              <Link key={post.id} href={{ pathname: '/forum/topic', query: { id: post.id } }} className="block">
+              <Link key={post.id} href={`/forum/topic/${post.id}`} className="block">
                 <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors cursor-pointer">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
