@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -43,9 +43,9 @@ export default function AdminPanel() {
     if (user) {
       loadData()
     }
-  }, [user, activeTab])
+  })
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       if (activeTab === 'users') {
@@ -68,7 +68,13 @@ export default function AdminPanel() {
       console.error('Veri yükleme hatası:', error)
     }
     setLoading(false)
-  }
+  }, [activeTab])
+
+  useEffect(() => {
+    if (user) {
+      loadData()
+    }
+  }, [user, activeTab, loadData])
 
   const updateUserRole = async (userId: string, newRole: string) => {
     try {
@@ -160,7 +166,7 @@ export default function AdminPanel() {
     }
   }
 
-  if (!user || user.role !== 'admin') {
+  if (!user || user?.profile?.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
         <div className="text-center">

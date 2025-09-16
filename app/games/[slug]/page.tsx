@@ -67,7 +67,7 @@ export default function GamePage({ params }: GamePageProps) {
           {/* Game Image */}
           <div className="aspect-video relative">
             <img 
-              src={game.thumbnail} 
+              src={game.image} 
               alt={game.title}
               className="w-full h-full object-cover"
             />
@@ -90,14 +90,11 @@ export default function GamePage({ params }: GamePageProps) {
                 Kategoriler
               </h3>
               <div className="flex flex-wrap gap-2">
-                {game.categories.map((category) => (
-                  <span 
-                    key={category}
-                    className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium"
-                  >
-                    {category}
-                  </span>
-                ))}
+                <span
+                  className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium"
+                >
+                  {game.genre}
+                </span>
               </div>
             </div>
 
@@ -107,7 +104,7 @@ export default function GamePage({ params }: GamePageProps) {
                 Bu oyun hakkında
               </h3>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base">
-                {game.fullDesc}
+                {game.description}
               </p>
             </div>
           </div>

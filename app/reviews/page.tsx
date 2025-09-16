@@ -15,7 +15,7 @@ const ReviewCard = ({ game }: { game: Game }) => {
       <div className="md:flex">
         <div className="md:w-1/3">
           <img 
-            src={game.thumbnail} 
+            src={game.image} 
             alt={game.title}
             className="w-full h-48 md:h-full object-cover"
           />
@@ -48,18 +48,15 @@ const ReviewCard = ({ game }: { game: Game }) => {
           </div>
           
           <div className="flex flex-wrap gap-2 mb-3">
-            {game.categories.map((category) => (
-              <span 
-                key={category}
-                className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded"
-              >
-                {category}
-              </span>
-            ))}
+            <span
+              className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded"
+            >
+              {game.genre}
+            </span>
           </div>
           
           <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-            {game.fullDesc}
+            {game.description}
           </p>
           
           <div className="flex justify-between items-center">
@@ -111,7 +108,7 @@ export default function ReviewsPage() {
       case 'title':
         return a.title.localeCompare(b.title, 'tr');
       case 'newest':
-        return b.id - a.id;
+        return parseInt(b.id) - parseInt(a.id);
       default:
         return 0;
     }

@@ -42,7 +42,7 @@ export default function GameCard({ game }: GameCardProps) {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden cursor-pointer">
         <div className="aspect-video relative">
           <img 
-            src={game.thumbnail} 
+            src={game.image} 
             alt={game.title}
             className="w-full h-full object-cover"
           />
@@ -52,19 +52,16 @@ export default function GameCard({ game }: GameCardProps) {
             {game.title}
           </h3>
           <p className="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">
-            {game.shortDesc}
+            {game.description}
           </p>
           <div className="flex justify-between items-center">
             <StarRating rating={game.rating} />
             <div className="flex flex-wrap gap-1">
-              {game.categories.slice(0, 2).map((category) => (
-                <span 
-                  key={category}
-                  className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded"
-                >
-                  {category}
-                </span>
-              ))}
+              <span
+                className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded"
+              >
+                {game.genre}
+              </span>
             </div>
           </div>
         </div>

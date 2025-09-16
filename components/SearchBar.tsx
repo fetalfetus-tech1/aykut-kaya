@@ -14,7 +14,7 @@ export default function SearchBar({ games, onFilteredGames }: SearchBarProps) {
 
   // Get unique categories from all games
   const categories = useMemo(() => {
-    const allCategories = games.flatMap(game => game.categories);
+    const allCategories = games.map(game => game.genre);
     return [...new Set(allCategories)].sort();
   }, [games]);
 
@@ -22,8 +22,8 @@ export default function SearchBar({ games, onFilteredGames }: SearchBarProps) {
   const filteredGames = useMemo(() => {
     return games.filter(game => {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          game.shortDesc.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === '' || game.categories.includes(selectedCategory);
+                          game.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === '' || game.genre === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [games, searchTerm, selectedCategory]);

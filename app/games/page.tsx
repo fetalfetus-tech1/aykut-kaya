@@ -120,7 +120,7 @@ export default function GamesPage() {
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
             <h3 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-              {[...new Set(games.flatMap(game => game.categories))].length}
+              {[...new Set(games.map(game => game.genre))].length}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">Farklı Kategori</p>
           </div>

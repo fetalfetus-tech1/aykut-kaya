@@ -1,10 +1,14 @@
 export interface Game {
-  id: number;
+  id: string;
   title: string;
-  slug: string;
-  thumbnail: string;
-  shortDesc: string;
-  fullDesc: string;
+  genre: string;
+  platform: string;
   rating: number;
-  categories: string[];
+  image: string;
+  description: string;
+  release_date: string;
+  developer: string;
+  price: number;
+  slug: string;
+  views: number;
 }
