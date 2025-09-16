@@ -58,11 +58,19 @@ const loadUserProfile = async (authUser: User) => {
       console.log('🔥 loadUserProfile: Setting user with new profile')
       updateGlobalState({ ...authUser, profile: newProfile }, false)
     } else {
-      console.error('🔥 loadUserProfile: Failed to create profile, setting user without profile')
-      updateGlobalState(authUser, false)
+      console.error('🔥 loadUserProfile: Failed to create profile, error:', upsertError)
+      // 401 hatası varsa, sadece user'ı profile olmadan set et
+      if (upsertError?.code === 'PGRST301' || upsertError?.message?.includes('401')) {
+        console.log('🔥 loadUserProfile: Auth error, setting user without profile')
+        updateGlobalState(authUser, false)
+      } else {
+        // Diğer hatalarda da user'ı set et
+        updateGlobalState(authUser, false)
+      }
     }
   } catch (error) {
     console.error('🔥 loadUserProfile: Exception:', error)
+    // Exception durumunda da user'ı profile olmadan set et
     updateGlobalState(authUser, false)
   }
 }
