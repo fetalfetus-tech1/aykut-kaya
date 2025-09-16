@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -54,13 +55,41 @@ interface AdCampaign {
 }
 
 export default function AdminPanel() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('users')
   const [users, setUsers] = useState<User[]>([])
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
   const [games, setGames] = useState<Game[]>([])
   const [adCampaigns, setAdCampaigns] = useState<AdCampaign[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Profil kontrolü
+  useEffect(() => {
+    if (!authLoading && user && !user.profile) {
+      router.push('/profile/setup')
+      return
+    }
+    if (!authLoading && (!user || user.profile?.role !== 'admin')) {
+      router.push('/dashboard')
+      return
+    }
+  }, [user, authLoading, router])
+
+  // Eğer yükleniyor veya profil kontrolü yapılıyorsa loading göster
+  if (authLoading || (user && !user.profile) || (user && user.profile?.role !== 'admin')) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  // Eğer kullanıcı yoksa login sayfasına yönlendir
+  if (!user) {
+    router.push('/auth')
+    return null
+  }
 
   // Yeni blog post form
   const [newPost, setNewPost] = useState({
@@ -444,7 +473,35 @@ export default function AdminPanel() {
     }
   }
 
-  if (!user || user?.profile?.role !== 'admin') {
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">🔐 Giriş Gerekli</h1>
+          <p>Bu sayfaya erişmek için giriş yapmalısınız.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user.profile) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">👤 Profil Gerekli</h1>
+          <p>Devam etmek için profilinizi oluşturmalısınız.</p>
+          <button
+            onClick={() => router.push('/profile/setup')}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium"
+          >
+            Profil Oluştur
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (user.profile.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
         <div className="text-center">

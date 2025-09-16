@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
@@ -21,7 +22,8 @@ interface RecentActivity {
 }
 
 export default function DashboardPage() {
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin, loading } = useAuth()
+  const router = useRouter()
   const [stats, setStats] = useState<UserStats>({
     totalPosts: 0,
     totalComments: 0,
@@ -29,106 +31,107 @@ export default function DashboardPage() {
     joinDate: ''
   })
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadingStats, setLoadingStats] = useState(true)
 
+  // Profil kontrolü - eğer profil yoksa setup sayfasına yönlendir
   useEffect(() => {
-    if (user) {
-      loadUserData()
+    if (!loading && user && !user.profile) {
+      router.push('/profile/setup')
+      return
     }
-  })
+  }, [user, loading, router])
 
   const loadUserData = useCallback(async () => {
+    if (!user?.profile) return
+
     try {
-      setLoading(true)
+      setLoadingStats(true)
 
       // Kullanıcı istatistiklerini yükle
       const [postsResult, commentsResult, profileResult] = await Promise.all([
         supabase
           .from('blog_posts')
           .select('id', { count: 'exact' })
-          .eq('author_id', user?.id),
+          .eq('author_id', user.id),
         supabase
           .from('forum_posts')
           .select('id', { count: 'exact' })
-          .eq('author_id', user?.id),
+          .eq('author_id', user.id),
         supabase
           .from('profiles')
           .select('created_at')
-          .eq('id', user?.id)
+          .eq('id', user.id)
           .single()
       ])
 
-      // Hata durumunda varsayılan değerler kullan
-      const totalPosts = postsResult.error ? 0 : (postsResult.count || 0)
-      const totalComments = commentsResult.error ? 0 : (commentsResult.count || 0)
-      const joinDate = profileResult.error ? new Date().toISOString() : (profileResult.data?.created_at || new Date().toISOString())
-
       setStats({
-        totalPosts,
-        totalComments,
+        totalPosts: postsResult.count || 0,
+        totalComments: commentsResult.count || 0,
         totalLikes: 0, // Şimdilik 0
-        joinDate
+        joinDate: profileResult.data?.created_at ? new Date(profileResult.data.created_at).toLocaleDateString('tr-TR') : ''
       })
 
       // Son aktiviteleri yükle
-      const recentPosts = await supabase
+      const { data: posts } = await supabase
         .from('blog_posts')
         .select('id, title, created_at')
-        .eq('author_id', user?.id)
+        .eq('author_id', user.id)
         .order('created_at', { ascending: false })
         .limit(5)
 
-      const activities: RecentActivity[] = []
-      if (!recentPosts.error && recentPosts.data) {
-        recentPosts.data.forEach(post => {
-          activities.push({
-            id: post.id,
-            type: 'post',
-            title: post.title,
-            created_at: post.created_at,
-            url: `/blog/${post.id}`
-          })
-        })
-      }
+      const activities: RecentActivity[] = (posts || []).map(post => ({
+        id: post.id,
+        type: 'post' as const,
+        title: post.title,
+        created_at: post.created_at,
+        url: `/blog/${post.id}`
+      }))
 
       setRecentActivity(activities)
     } catch (error) {
-      console.error('Kullanıcı verisi yüklenirken hata:', error)
+      console.error('Dashboard verisi yüklenirken hata:', error)
+    } finally {
+      setLoadingStats(false)
     }
-    setLoading(false)
-  }, [user?.id])
+  }, [user])
 
   useEffect(() => {
-    if (user) {
+    if (user?.profile) {
       loadUserData()
     }
   }, [user, loadUserData])
 
-  if (loading) {
+  // Eğer yükleniyor veya profil yoksa loading göster
+  if (loading || (user && !user.profile)) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-          <p className="mt-2">Dashboard yükleniyor...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
+  // Eğer kullanıcı yoksa login sayfasına yönlendir
+  if (!user) {
+    router.push('/auth')
+    return null
+  }
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2">👤 Dashboard</h1>
-            <p className="text-gray-400">Hoş geldin, {user?.user_metadata?.username || 'Kullanıcı'}!</p>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">👤 Dashboard</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Hoş geldin, {user.profile?.username || user.email || 'Kullanıcı'}!
+            </p>
           </div>
 
           {isAdmin && (
             <Link
               href="/admin"
-              className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
               ⚙️ Admin Paneli
             </Link>
@@ -137,40 +140,40 @@ export default function DashboardPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gray-800 rounded-lg p-6 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
             <div className="text-3xl mb-2">📝</div>
-            <div className="text-2xl font-bold text-blue-400">{stats.totalPosts}</div>
-            <div className="text-gray-400">Blog Yazısı</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.totalPosts}</div>
+            <div className="text-gray-600 dark:text-gray-400">Blog Yazısı</div>
           </div>
 
-          <div className="bg-gray-800 rounded-lg p-6 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
             <div className="text-3xl mb-2">💬</div>
-            <div className="text-2xl font-bold text-green-400">{stats.totalComments}</div>
-            <div className="text-gray-400">Forum Gönderisi</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.totalComments}</div>
+            <div className="text-gray-600 dark:text-gray-400">Forum Gönderisi</div>
           </div>
 
-          <div className="bg-gray-800 rounded-lg p-6 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
             <div className="text-3xl mb-2">❤️</div>
-            <div className="text-2xl font-bold text-red-400">{stats.totalLikes}</div>
-            <div className="text-gray-400">Beğeni</div>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.totalLikes}</div>
+            <div className="text-gray-600 dark:text-gray-400">Beğeni</div>
           </div>
 
-          <div className="bg-gray-800 rounded-lg p-6 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
             <div className="text-3xl mb-2">📅</div>
-            <div className="text-lg font-bold text-purple-400">
+            <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
               {stats.joinDate ? new Date(stats.joinDate).toLocaleDateString('tr-TR') : 'Bilinmiyor'}
             </div>
-            <div className="text-gray-400">Katılma Tarihi</div>
+            <div className="text-gray-600 dark:text-gray-400">Katılma Tarihi</div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-gray-800 rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold mb-4">⚡ Hızlı İşlemler</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">⚡ Hızlı İşlemler</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link
               href="/blog"
-              className="bg-blue-600 hover:bg-blue-700 p-4 rounded-lg text-center transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg text-center transition-colors"
             >
               <div className="text-2xl mb-2">📝</div>
               <div className="font-medium">Blog Yazısı Yaz</div>
@@ -178,7 +181,7 @@ export default function DashboardPage() {
 
             <Link
               href="/forum"
-              className="bg-green-600 hover:bg-green-700 p-4 rounded-lg text-center transition-colors"
+              className="bg-green-600 hover:bg-green-700 text-white p-4 rounded-lg text-center transition-colors"
             >
               <div className="text-2xl mb-2">💬</div>
               <div className="font-medium">Forum&apos;da Tartış</div>
@@ -186,7 +189,7 @@ export default function DashboardPage() {
 
             <Link
               href="/oyunlar"
-              className="bg-purple-600 hover:bg-purple-700 p-4 rounded-lg text-center transition-colors"
+              className="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg text-center transition-colors"
             >
               <div className="text-2xl mb-2">🎮</div>
               <div className="font-medium">Oyunları Keşfet</div>
@@ -195,19 +198,24 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4">📈 Son Aktiviteler</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">📈 Son Aktiviteler</h2>
 
-          {recentActivity.length === 0 ? (
+          {loadingStats ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Aktiviteler yükleniyor...</p>
+            </div>
+          ) : recentActivity.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-6xl mb-4">📝</div>
-              <h3 className="text-xl font-bold mb-2">Henüz aktivite yok</h3>
-              <p className="text-gray-400 mb-4">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Henüz aktivite yok</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 İlk blog yazını yazarak başlayabilirsin!
               </p>
               <Link
                 href="/blog"
-                className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition-colors inline-block"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-block"
               >
                 Blog Yazısı Yaz
               </Link>
@@ -215,30 +223,23 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-4">
               {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+                <div key={activity.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="text-2xl">
-                      {activity.type === 'post' && '📝'}
-                      {activity.type === 'comment' && '💬'}
-                      {activity.type === 'like' && '❤️'}
+                      {activity.type === 'post' ? '📝' : activity.type === 'comment' ? '💬' : '❤️'}
                     </div>
                     <div>
-                      <Link
-                        href={activity.url}
-                        className="font-medium hover:text-blue-400 transition-colors"
-                      >
-                        {activity.title}
-                      </Link>
-                      <div className="text-sm text-gray-400">
+                      <h3 className="font-medium text-gray-900 dark:text-white">{activity.title}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         {new Date(activity.created_at).toLocaleDateString('tr-TR')}
-                      </div>
+                      </p>
                     </div>
                   </div>
                   <Link
                     href={activity.url}
-                    className="text-blue-400 hover:text-blue-300 transition-colors"
+                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                   >
-                    →
+                    Görüntüle →
                   </Link>
                 </div>
               ))}
