@@ -39,6 +39,7 @@ interface ForumPost {
   title: string
   content: string
   author_id: string
+  approved: boolean
   created_at: string
   profiles: { username: string }
 }
@@ -51,6 +52,8 @@ export default function AdminPanel() {
   const [gameReviews, setGameReviews] = useState<GameReview[]>([])
   const [forumPosts, setForumPosts] = useState<ForumPost[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [showUserModal, setShowUserModal] = useState(false)
 
   // Blog post form
   const [showBlogForm, setShowBlogForm] = useState(false)
@@ -309,6 +312,86 @@ export default function AdminPanel() {
     }
   }
 
+  // User management handlers
+  const handleUpdateUserRole = async (userId: string, newRole: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', userId)
+
+      if (error) throw error
+      loadData()
+    } catch (error) {
+      console.error('Update user role error:', error)
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) return
+
+    try {
+      // First delete from profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId)
+
+      if (profileError) throw profileError
+
+      // Note: Auth user deletion should be done through Supabase Auth API
+      // This requires admin privileges and should be done carefully
+      loadData()
+    } catch (error) {
+      console.error('Delete user error:', error)
+    }
+  }
+
+  // Forum approval handlers
+  const handleApprovePost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('forum_posts')
+        .update({ approved: true })
+        .eq('id', postId)
+
+      if (error) throw error
+      loadData()
+    } catch (error) {
+      console.error('Approve post error:', error)
+    }
+  }
+
+  const handleRejectPost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('forum_posts')
+        .update({ approved: false })
+        .eq('id', postId)
+
+      if (error) throw error
+      loadData()
+    } catch (error) {
+      console.error('Reject post error:', error)
+    }
+  }
+
+  const handleDeleteForumPost = async (id: string) => {
+    if (!confirm('Bu forum postunu silmek istediğinizden emin misiniz?')) return
+
+    try {
+      const { error } = await supabase
+        .from('forum_posts')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      loadData()
+    } catch (error) {
+      console.error('Delete forum post error:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-8">
@@ -354,7 +437,8 @@ export default function AdminPanel() {
                         <tr className="border-b border-gray-700">
                           <th className="px-4 py-2">Kullanıcı Adı</th>
                           <th className="px-4 py-2">Rol</th>
-                          <th className="px-4 py-2">Kayıt Tarihi</th>
+                          <th className="px-4 py-2">Katılma Tarihi</th>
+                          <th className="px-4 py-2">İşlemler</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -362,15 +446,30 @@ export default function AdminPanel() {
                           <tr key={user.id} className="border-b border-gray-700">
                             <td className="px-4 py-2">{user.username}</td>
                             <td className="px-4 py-2">
-                              <span className={`px-2 py-1 rounded text-xs ${
-                                user.role === 'admin' ? 'bg-red-600' :
-                                user.role === 'moderator' ? 'bg-yellow-600' : 'bg-green-600'
-                              }`}>
-                                {user.role}
-                              </span>
+                              <select
+                                value={user.role}
+                                onChange={(e) => handleUpdateUserRole(user.id, e.target.value)}
+                                className="bg-gray-700 text-white px-2 py-1 rounded text-sm"
+                              >
+                                <option value="user">User</option>
+                                <option value="moderator">Moderator</option>
+                                <option value="admin">Admin</option>
+                              </select>
                             </td>
                             <td className="px-4 py-2">
-                              {new Date(user.created_at).toLocaleDateString('tr-TR')}
+                              {new Date(user.created_at).toLocaleDateString('tr-TR', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </td>
+                            <td className="px-4 py-2">
+                              <button
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
+                              >
+                                Sil
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -399,7 +498,11 @@ export default function AdminPanel() {
                           <div>
                             <h3 className="font-bold">{post.title}</h3>
                             <p className="text-sm text-gray-400">
-                              {post.profiles?.username} • {new Date(post.created_at).toLocaleDateString('tr-TR')}
+                              {post.profiles?.username} • {new Date(post.created_at).toLocaleDateString('tr-TR', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
                             </p>
                             <p className="text-sm mt-2">{post.content.substring(0, 100)}...</p>
                           </div>
@@ -448,7 +551,11 @@ export default function AdminPanel() {
                           <div>
                             <h3 className="font-bold">{review.title}</h3>
                             <p className="text-sm text-gray-400">
-                              {review.game_title} • {review.profiles?.username} • {new Date(review.created_at).toLocaleDateString('tr-TR')}
+                              {review.game_title} • {review.profiles?.username} • {new Date(review.created_at).toLocaleDateString('tr-TR', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
                             </p>
                             <div className="flex items-center mt-1">
                               <span className="text-yellow-400">⭐</span>
@@ -493,12 +600,38 @@ export default function AdminPanel() {
                           <div>
                             <h3 className="font-bold">{post.title}</h3>
                             <p className="text-sm text-gray-400">
-                              {post.profiles?.username} • {new Date(post.created_at).toLocaleDateString('tr-TR')}
+                              {post.profiles?.username} • {new Date(post.created_at).toLocaleDateString('tr-TR', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
                             </p>
                             <p className="text-sm mt-2">{post.content.substring(0, 100)}...</p>
                           </div>
                           <div className="flex space-x-2">
-                            <button className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm">
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              post.approved ? 'bg-green-600' : 'bg-yellow-600'
+                            }`}>
+                              {post.approved ? 'Onaylandı' : 'Bekliyor'}
+                            </span>
+                            {!post.approved && (
+                              <button
+                                onClick={() => handleApprovePost(post.id)}
+                                className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
+                              >
+                                Onayla
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleRejectPost(post.id)}
+                              className="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm"
+                            >
+                              Reddet
+                            </button>
+                            <button
+                              onClick={() => handleDeleteForumPost(post.id)}
+                              className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
+                            >
                               Sil
                             </button>
                           </div>
