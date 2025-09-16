@@ -22,6 +22,7 @@ export function useAuth() {
 
   const loadUserProfile = async (authUser: User) => {
     try {
+      console.log('🔍 loadUserProfile - Starting for user:', authUser.id, authUser.email)
       // Önce profile var mı kontrol et
       const { data: existingProfile } = await supabase
         .from('profiles')
@@ -29,13 +30,16 @@ export function useAuth() {
         .eq('id', authUser.id)
         .single()
 
+      console.log('🔍 loadUserProfile - Existing profile check result:', existingProfile)
+
       if (existingProfile) {
+        console.log('🔍 loadUserProfile - Profile found, setting user with profile')
         setUser({ ...authUser, profile: existingProfile })
         return
       }
 
       // Profile yoksa upsert ile oluştur (conflict olursa güncelle)
-      console.log('Profile bulunamadı, upsert ile oluşturuluyor...')
+      console.log('🔍 loadUserProfile - Profile not found, trying upsert...')
       const { data: newProfile, error: upsertError } = await supabase
         .from('profiles')
         .upsert({
@@ -49,15 +53,18 @@ export function useAuth() {
         .select()
         .single()
 
+      console.log('🔍 loadUserProfile - Upsert result:', { newProfile, upsertError })
+
       if (newProfile) {
+        console.log('🔍 loadUserProfile - Profile created, setting user with profile')
         setUser({ ...authUser, profile: newProfile })
       } else {
-        console.error('Profile upsert hatası:', upsertError)
+        console.error('🔍 loadUserProfile - Profile creation failed:', upsertError)
         // Hata durumunda profile olmadan devam et
         setUser(authUser)
       }
     } catch (error) {
-      console.error('Profile yüklenirken hata:', error)
+      console.error('🔍 loadUserProfile - Exception:', error)
       // Hata durumunda profile olmadan devam et
       setUser(authUser)
     }
@@ -66,9 +73,11 @@ export function useAuth() {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔍 useAuth - Initial session:', session)
       if (session?.user) {
         loadUserProfile(session.user)
       } else {
+        console.log('🔍 useAuth - No initial session, user is null')
         setUser(null)
       }
       setLoading(false)
@@ -78,9 +87,11 @@ export function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('🔍 useAuth - Auth state change:', _event, session)
       if (session?.user) {
         loadUserProfile(session.user)
       } else {
+        console.log('🔍 useAuth - Auth state change: user logged out or no session')
         setUser(null)
       }
       setLoading(false)

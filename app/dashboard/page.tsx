@@ -24,6 +24,12 @@ interface RecentActivity {
 export default function DashboardPage() {
   const { user, isAdmin, loading: authLoading } = useAuth()
   const router = useRouter()
+
+  // Debug logları
+  console.log('🔍 Dashboard - authLoading:', authLoading)
+  console.log('🔍 Dashboard - user:', user)
+  console.log('🔍 Dashboard - user?.profile:', user?.profile)
+  console.log('🔍 Dashboard - isAdmin:', isAdmin)
   const [stats, setStats] = useState<UserStats>({
     totalPosts: 0,
     totalComments: 0,
