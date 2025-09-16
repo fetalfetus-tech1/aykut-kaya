@@ -55,41 +55,16 @@ interface AdCampaign {
 }
 
 export default function AdminPanel() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, isAdmin, loading: authLoading } = useAuth()
   const router = useRouter()
+
+  // Tüm state'leri en başta tanımla (React Hook kuralı)
   const [activeTab, setActiveTab] = useState('users')
   const [users, setUsers] = useState<User[]>([])
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
   const [games, setGames] = useState<Game[]>([])
   const [adCampaigns, setAdCampaigns] = useState<AdCampaign[]>([])
   const [loading, setLoading] = useState(true)
-
-  // Profil kontrolü
-  useEffect(() => {
-    if (!authLoading && user && !user.profile) {
-      router.push('/profile/setup')
-      return
-    }
-    if (!authLoading && (!user || user.profile?.role !== 'admin')) {
-      router.push('/dashboard')
-      return
-    }
-  }, [user, authLoading, router])
-
-  // Eğer yükleniyor veya profil kontrolü yapılıyorsa loading göster
-  if (authLoading || (user && !user.profile) || (user && user.profile?.role !== 'admin')) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
-
-  // Eğer kullanıcı yoksa login sayfasına yönlendir
-  if (!user) {
-    router.push('/auth')
-    return null
-  }
 
   // Yeni blog post form
   const [newPost, setNewPost] = useState({
@@ -138,6 +113,53 @@ export default function AdminPanel() {
     enableRegistration: true,
     maintenanceMode: false
   })
+
+  console.log('🔧 ADMIN DEBUG:', {
+    authLoading,
+    user: user ? { id: user.id, email: user.email, profile: user.profile } : null,
+    isAdmin,
+    hasProfile: !!user?.profile,
+    profileRole: user?.profile?.role,
+    redirectCondition: !authLoading && (!user || user.profile?.role !== 'admin')
+  })
+
+  // Auth kontrolü - hook'lardan sonra yap
+  useEffect(() => {
+    if (!authLoading && user && !user.profile) {
+      console.log('🔧 ADMIN: Redirecting to profile setup - no profile')
+      router.push('/profile/setup')
+      return
+    }
+    if (!authLoading && (!user || user.profile?.role !== 'admin')) {
+      console.log('🔧 ADMIN: Redirecting to dashboard - not admin')
+      router.push('/dashboard')
+      return
+    }
+  }, [user, authLoading, router])
+
+  // Auth durumuna göre render kontrolü
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    router.push('/auth')
+    return null
+  }
+
+  if (!user.profile) {
+    router.push('/profile/setup')
+    return null
+  }
+
+  if (user.profile.role !== 'admin') {
+    router.push('/dashboard')
+    return null
+  }
 
   useEffect(() => {
     if (user) {

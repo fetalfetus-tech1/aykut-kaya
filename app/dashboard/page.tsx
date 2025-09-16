@@ -25,12 +25,18 @@ export default function DashboardPage() {
   const { user, isAdmin, loading: authLoading } = useAuth()
   const router = useRouter()
 
-  console.log('🚨 DASHBOARD DEBUG:', { 
-    authLoading, 
-    user: user ? { id: user.id, email: user.email, profile: user.profile } : null, 
+  console.log('🚨 DASHBOARD DEBUG:', {
+    authLoading,
+    user: user ? {
+      id: user.id,
+      email: user.email,
+      profile: user.profile,
+      hasProfile: !!user.profile,
+      profileRole: user.profile?.role
+    } : null,
     isAdmin,
     userType: typeof user,
-    hasProfile: !!user?.profile
+    userKeys: user ? Object.keys(user) : null
   })
   const [stats, setStats] = useState<UserStats>({
     totalPosts: 0,
