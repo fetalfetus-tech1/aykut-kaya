@@ -48,7 +48,7 @@ export default function DashboardPage() {
     try {
       setLoadingStats(true)
 
-      // Kullanıcı istatistiklerini yükle - profile varsa kullan, yoksa user.id kullan
+      // Kullanıcı istatistiklerini yükle - user varsa kullan
       const userId = user.id
       const [postsResult, commentsResult, profileResult] = await Promise.all([
         supabase
@@ -112,11 +112,11 @@ export default function DashboardPage() {
     )
   }
 
-  // Eğer kullanıcı yoksa login sayfasına yönlendir
-  if (!user) {
-    router.push('/auth')
-    return null
-  }
+  // Auth kontrolü - geçici olarak kaldırıldı (debug için)
+  // if (!user) {
+  //   router.push('/auth')
+  //   return null
+  // }
 
   // Profil kontrolü kaldırıldı - profile yoksa da dashboard'a girebilir
 
@@ -128,13 +128,13 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">👤 Dashboard</h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Hoş geldin, {user.profile?.username || user.email || 'Kullanıcı'}!
+              Hoş geldin, {user?.profile?.username || user?.email || 'Misafir'}!
             </p>
-            {!user.profile && (
+            {user && !user.profile && (
               <div className="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg">
                 <div className="flex items-center">
                   <span className="text-yellow-800 dark:text-yellow-200 text-sm">
-                    ⚠️ Profiliniz henüz tamamlanmamış. 
+                    ⚠️ Profiliniz henüz tamamlanmamış.
                     <Link href="/profile/setup" className="underline hover:text-yellow-600 dark:hover:text-yellow-300 ml-1">
                       Profilinizi tamamlayın
                     </Link>
@@ -144,7 +144,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {isAdmin && (
+          {user && isAdmin && (
             <Link
               href="/admin"
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
