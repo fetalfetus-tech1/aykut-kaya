@@ -27,16 +27,16 @@ export default function BlogPage() {
     try {
       const { data, error } = await supabase
         .from('blog_posts')
-        .select('*')
+        .select('*, profiles:author_id(username)')
         .eq('published', true)
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      // Posts'ları dönüştür (profiles join kaldırıldı)
+      // Posts'ları dönüştür (profil join ile yazar adı)
       const transformedPosts = (data || []).map(post => ({
         ...post,
-        author_name: 'Anonim' // Şimdilik anonim
+        author_name: post.profiles?.username || 'Anonim'
       }))
 
       setPosts(transformedPosts)
