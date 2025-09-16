@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 
+export default function ProfileSetupPage() {
   const { user } = useAuth()
   const [username, setUsername] = useState('')
   const [fullName, setFullName] = useState('')
