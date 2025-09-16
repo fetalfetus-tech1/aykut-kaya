@@ -38,7 +38,7 @@ export default function ForumPage() {
       // Önce forum_stars joinini ekle
       const { data, error } = await supabase
         .from('forum_posts')
-        .select('*, forum_stars(*)')
+        .select('*, forum_stars!fk_forum_stars_post(*)')
         .order('created_at', { ascending: false })
 
       if (error) throw error
