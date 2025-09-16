@@ -1,5 +1,5 @@
 export default function Footer() {
-  const version = "1.1.0";
+  const version = "1.1.1";
   const lastUpdate = "16.09.2025";
 
   return (

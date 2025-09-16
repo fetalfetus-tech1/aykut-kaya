@@ -22,7 +22,7 @@ export function useAuth() {
 
   const loadUserProfile = async (authUser: User) => {
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authUser.id)
@@ -31,10 +31,29 @@ export function useAuth() {
       if (profile) {
         setUser({ ...authUser, profile })
       } else {
-        setUser(authUser)
+        // Profile yoksa otomatik oluştur
+        console.log('Profile bulunamadı, otomatik oluşturuluyor...')
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authUser.id,
+            username: authUser.email?.split('@')[0] || `user_${authUser.id.slice(0, 8)}`,
+            full_name: '',
+            role: 'user'
+          })
+          .select()
+          .single()
+
+        if (newProfile) {
+          setUser({ ...authUser, profile: newProfile })
+        } else {
+          console.error('Profile oluşturma hatası:', insertError)
+          setUser(authUser)
+        }
       }
     } catch (error) {
       console.error('Profile yüklenirken hata:', error)
+      // Hata durumunda da user'ı set et
       setUser(authUser)
     }
   }
