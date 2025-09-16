@@ -21,7 +21,7 @@ interface PopularPost {
   slug: string
   views: number
   created_at: string
-  profiles: { username: string }
+  author_name: string
 }
 
 export default function HomePage() {
@@ -41,18 +41,26 @@ export default function HomePage() {
 
   const loadPopularContent = async () => {
     try {
-      // En popüler blog yazıları (gerçek veriler)
+      // En popüler blog yazıları (profiles join'i kaldırıldı - RLS sorunu nedeniyle)
       const { data: posts } = await supabase
         .from('blog_posts')
-        .select(`
-          *,
-          profiles(username)
-        `)
+        .select('*')
         .eq('published', true)
         .order('views', { ascending: false })
         .limit(5)
 
-      setPopularPosts(posts || [])
+      // Posts'ları dönüştür (profiles join kaldırıldı)
+      const transformedPosts = (posts || []).map(post => ({
+        id: post.id,
+        title: post.title,
+        excerpt: post.excerpt || '',
+        slug: post.slug,
+        views: post.views || 0,
+        created_at: post.created_at,
+        author_name: 'Anonim' // Şimdilik anonim
+      }))
+
+      setPopularPosts(transformedPosts)
 
       // Örnek popüler oyunlar (daha sonra veritabanından gelecek)
       const mockGames = [
@@ -316,7 +324,7 @@ export default function HomePage() {
                         
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div className="flex items-center gap-3">
-                            <span>✍️ {post.profiles?.username}</span>
+                            <span>✍️ {post.author_name}</span>
                             <span>👁️ {post.views}</span>
                           </div>
                           <span>{new Date(post.created_at).toLocaleDateString('tr-TR')}</span>
