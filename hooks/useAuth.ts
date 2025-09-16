@@ -22,18 +22,24 @@ export function useAuth() {
 
   const loadUserProfile = async (authUser: User) => {
     try {
+      console.log('🔥 loadUserProfile: Starting for user:', authUser.id)
+
       // Önce profile var mı kontrol et
-      const { data: existingProfile } = await supabase
+      const { data: existingProfile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authUser.id)
         .single()
 
+      console.log('🔥 loadUserProfile: Profile query result:', { profile: !!existingProfile, error })
+
       if (existingProfile) {
+        console.log('🔥 loadUserProfile: Setting user with profile')
         setUser({ ...authUser, profile: existingProfile })
         return
       }
 
+      console.log('🔥 loadUserProfile: Profile not found, creating...')
       // Profile yoksa upsert ile oluştur (conflict olursa güncelle)
       const { data: newProfile, error: upsertError } = await supabase
         .from('profiles')
@@ -48,26 +54,32 @@ export function useAuth() {
         .select()
         .single()
 
+      console.log('🔥 loadUserProfile: Upsert result:', { profile: !!newProfile, error: upsertError })
+
       if (newProfile) {
+        console.log('🔥 loadUserProfile: Setting user with new profile')
         setUser({ ...authUser, profile: newProfile })
       } else {
-        console.error('Profile upsert hatası:', upsertError)
-        // Hata durumunda profile olmadan devam et
+        console.error('🔥 loadUserProfile: Failed to create profile, setting user without profile')
         setUser(authUser)
       }
     } catch (error) {
-      console.error('Profile yüklenirken hata:', error)
-      // Hata durumunda profile olmadan devam et
+      console.error('🔥 loadUserProfile: Exception:', error)
       setUser(authUser)
     }
   }
 
   useEffect(() => {
+    console.log('🔥 useAuth: Initializing...')
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔥 useAuth: Initial session result:', !!session)
       if (session?.user) {
+        console.log('🔥 useAuth: Loading profile for user:', session.user.id)
         loadUserProfile(session.user)
       } else {
+        console.log('🔥 useAuth: No session, setting user to null')
         setUser(null)
       }
       setLoading(false)
@@ -76,10 +88,13 @@ export function useAuth() {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔥 useAuth: Auth change event:', event, !!session)
       if (session?.user) {
+        console.log('🔥 useAuth: Loading profile for user:', session.user.id)
         loadUserProfile(session.user)
       } else {
+        console.log('🔥 useAuth: No session in change event, setting user to null')
         setUser(null)
       }
       setLoading(false)
