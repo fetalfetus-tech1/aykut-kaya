@@ -119,25 +119,10 @@ export default function AdminPanel() {
     user: user ? { id: user.id, email: user.email, profile: user.profile } : null,
     isAdmin,
     hasProfile: !!user?.profile,
-    profileRole: user?.profile?.role,
-    redirectCondition: !authLoading && (!user || user.profile?.role !== 'admin')
+    profileRole: user?.profile?.role
   })
 
-  // Auth kontrolü - hook'lardan sonra yap
-  useEffect(() => {
-    if (!authLoading && user && !user.profile) {
-      console.log('🔧 ADMIN: Redirecting to profile setup - no profile')
-      router.push('/profile/setup')
-      return
-    }
-    if (!authLoading && (!user || user.profile?.role !== 'admin')) {
-      console.log('🔧 ADMIN: Redirecting to dashboard - not admin')
-      router.push('/dashboard')
-      return
-    }
-  }, [user, authLoading, router])
-
-  // Auth durumuna göre render kontrolü
+  // Basit admin kontrolü - useEffect olmadan
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -146,19 +131,14 @@ export default function AdminPanel() {
     )
   }
 
-  if (!user) {
-    router.push('/auth')
-    return null
-  }
-
-  if (!user.profile) {
-    router.push('/profile/setup')
-    return null
-  }
-
-  if (user.profile.role !== 'admin') {
+  if (!isAdmin) {
+    console.log('🔧 ADMIN: Not admin, redirecting to dashboard')
     router.push('/dashboard')
-    return null
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
   }
 
   useEffect(() => {
