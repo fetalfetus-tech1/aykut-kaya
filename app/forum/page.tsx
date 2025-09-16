@@ -15,6 +15,7 @@ interface ForumPost {
   views: number
   created_at: string
   author_name: string
+  author_avatar: string
   stars?: number
 }
 
