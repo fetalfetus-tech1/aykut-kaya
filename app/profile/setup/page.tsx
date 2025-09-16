@@ -1,18 +1,52 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 
-export default function ProfileSetupPage() {
   const { user } = useAuth()
   const [username, setUsername] = useState('')
   const [fullName, setFullName] = useState('')
   const [bio, setBio] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [gallery, setGallery] = useState<string[]>([])
+  const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  // Galeri avatarlarını yükle
+  useEffect(() => {
+    fetch('/avatars/gallery.json')
+      .then(res => res.json())
+      .then(setGallery)
+  }, [])
+
+  // Dosya yükleme
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+    setUploading(true)
+    setError("")
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `avatar_${user.id}_${Date.now()}.${fileExt}`
+      const { data, error } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true })
+      if (error) throw error
+      const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(fileName)
+      setAvatarUrl(publicUrlData.publicUrl)
+    } catch (err: any) {
+      setError('Avatar yüklenemedi. Lütfen tekrar deneyin.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Galeriden seçim
+  const handleGallerySelect = (filename: string) => {
+    setAvatarUrl(`/avatars/${filename}`)
+  }
 
   useEffect(() => {
     if (!user) {
@@ -42,6 +76,7 @@ export default function ProfileSetupPage() {
           username: username.trim(),
           full_name: fullName.trim() || null,
           bio: bio.trim() || null,
+          avatar_url: avatarUrl.trim() || null,
           role: 'user'
         })
 
@@ -132,6 +167,49 @@ export default function ProfileSetupPage() {
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {bio.length}/500 karakter
             </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Avatar</label>
+            <div className="flex items-center gap-4 mb-2">
+              <img src={avatarUrl || '/avatars/default.png'} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-blue-500 bg-gray-900" />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
+                disabled={uploading}
+              >
+                {uploading ? 'Yükleniyor...' : 'Cihazdan Yükle'}
+              </button>
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+            <div className="mb-2">
+              <span className="block text-xs text-gray-500 mb-1">Veya galeriden seç:</span>
+              <div className="flex gap-2 flex-wrap">
+                {gallery.map(filename => (
+                  <button
+                    type="button"
+                    key={filename}
+                    onClick={() => handleGallerySelect(filename)}
+                    className={`border-2 rounded-full p-0.5 ${avatarUrl === `/avatars/${filename}` ? 'border-blue-600' : 'border-transparent'}`}
+                  >
+                    <img src={`/avatars/${filename}`} alt={filename} className="w-10 h-10 rounded-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <input
+              type="url"
+              value={avatarUrl}
+              onChange={e => setAvatarUrl(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white mt-2"
+              placeholder="https://..."
+            />
           </div>
 
           {error && (
