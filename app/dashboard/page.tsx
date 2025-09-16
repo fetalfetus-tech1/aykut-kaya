@@ -22,7 +22,7 @@ interface RecentActivity {
 }
 
 export default function DashboardPage() {
-  const { user, isAdmin, loading } = useAuth()
+  const { user, isAdmin, loading: authLoading } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState<UserStats>({
     totalPosts: 0,
@@ -35,11 +35,11 @@ export default function DashboardPage() {
 
   // Profil kontrolü - eğer profil yoksa setup sayfasına yönlendir
   useEffect(() => {
-    if (!loading && user && !user.profile) {
+    if (!authLoading && user && !user.profile) {
       router.push('/profile/setup')
       return
     }
-  }, [user, loading, router])
+  }, [user, authLoading, router])
 
   const loadUserData = useCallback(async () => {
     if (!user?.profile) return
@@ -101,8 +101,8 @@ export default function DashboardPage() {
     }
   }, [user, loadUserData])
 
-  // Eğer yükleniyor veya profil yoksa loading göster
-  if (loading || (user && !user.profile)) {
+  // Eğer yükleniyor ise loading göster
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -114,6 +114,16 @@ export default function DashboardPage() {
   if (!user) {
     router.push('/auth')
     return null
+  }
+
+  // Eğer profil yoksa profile setup'a yönlendirildi bile (useEffect'te)
+  // Bu kısım çalışmayacak ama güvenlik için bırakıyorum
+  if (!user.profile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    )
   }
 
   return (

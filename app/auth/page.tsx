@@ -1,5 +1,26 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { signIn, signUp } from '@/lib/database'
+import { useAuth } from '@/hooks/useAuth'
+
+export default function AuthPage() {
+  const [isLogin, setIsLogin] = useState(true)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
+
+  // Eğer kullanıcı zaten giriş yapmışsa dashboard'a yönlendir
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/dashboard')
+    }
+  }, [user, authLoading, router])
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn, signUp } from '@/lib/database'
