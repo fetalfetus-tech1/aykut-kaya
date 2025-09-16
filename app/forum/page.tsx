@@ -35,10 +35,10 @@ export default function ForumPage() {
 
   const loadPosts = async () => {
     try {
-      // forum_stars tablosundan yıldız sayısını da çek
+      // forum_stars ve forum_replies ilişkili tabloları dizi olarak çek
       const { data, error } = await supabase
         .from('forum_posts')
-        .select('*, forum_stars(count), forum_replies(count)')
+        .select('*, forum_stars(*), forum_replies(*)')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -47,8 +47,8 @@ export default function ForumPage() {
       const transformedPosts = (data || []).map(post => ({
         ...post,
         author_name: 'Anonim', // Şimdilik anonim
-        stars: post.forum_stars?.[0]?.count || 0,
-        replies_count: post.forum_replies?.[0]?.count || 0,
+        stars: Array.isArray(post.forum_stars) ? post.forum_stars.length : 0,
+        replies_count: Array.isArray(post.forum_replies) ? post.forum_replies.length : 0,
       }))
 
       setPosts(transformedPosts)
