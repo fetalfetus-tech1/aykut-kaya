@@ -33,39 +33,36 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [loadingStats, setLoadingStats] = useState(true)
 
-  // Debug logları
-  console.log('Dashboard - authLoading:', authLoading)
-  console.log('Dashboard - user:', user)
-  console.log('Dashboard - user.profile:', user?.profile)
-
   // Profil kontrolü - eğer profil yoksa setup sayfasına yönlendir
   useEffect(() => {
     if (!authLoading && user && !user.profile) {
-      router.push('/profile/setup')
+      // Şimdilik profile setup'a yönlendirmiyoruz, dashboard'da uyarı gösteriyoruz
+      // router.push('/profile/setup')
       return
     }
   }, [user, authLoading, router])
 
   const loadUserData = useCallback(async () => {
-    if (!user?.profile) return
+    if (!user) return
 
     try {
       setLoadingStats(true)
 
-      // Kullanıcı istatistiklerini yükle
+      // Kullanıcı istatistiklerini yükle - profile varsa kullan, yoksa user.id kullan
+      const userId = user.id
       const [postsResult, commentsResult, profileResult] = await Promise.all([
         supabase
           .from('blog_posts')
           .select('id', { count: 'exact' })
-          .eq('author_id', user.id),
+          .eq('author_id', userId),
         supabase
           .from('forum_posts')
           .select('id', { count: 'exact' })
-          .eq('author_id', user.id),
+          .eq('author_id', userId),
         supabase
           .from('profiles')
           .select('created_at')
-          .eq('id', user.id)
+          .eq('id', userId)
           .single()
       ])
 
@@ -101,7 +98,7 @@ export default function DashboardPage() {
   }, [user])
 
   useEffect(() => {
-    if (user?.profile) {
+    if (user) {
       loadUserData()
     }
   }, [user, loadUserData])
@@ -121,15 +118,7 @@ export default function DashboardPage() {
     return null
   }
 
-  // Eğer profil yoksa profile setup'a yönlendirildi bile (useEffect'te)
-  // Bu kısım çalışmayacak ama güvenlik için bırakıyorum
-  if (!user.profile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
+  // Profil kontrolü kaldırıldı - profile yoksa da dashboard'a girebilir
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -141,6 +130,18 @@ export default function DashboardPage() {
             <p className="text-gray-600 dark:text-gray-400">
               Hoş geldin, {user.profile?.username || user.email || 'Kullanıcı'}!
             </p>
+            {!user.profile && (
+              <div className="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                <div className="flex items-center">
+                  <span className="text-yellow-800 dark:text-yellow-200 text-sm">
+                    ⚠️ Profiliniz henüz tamamlanmamış. 
+                    <Link href="/profile/setup" className="underline hover:text-yellow-600 dark:hover:text-yellow-300 ml-1">
+                      Profilinizi tamamlayın
+                    </Link>
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {isAdmin && (
