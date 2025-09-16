@@ -120,20 +120,32 @@ export default function AdminPanel() {
     setLoading(true)
     try {
       if (activeTab === 'users') {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .order('created_at', { ascending: false })
-        setUsers(data || [])
+
+        if (error) {
+          console.error('Profiles loading error:', error)
+          setUsers([])
+        } else {
+          setUsers(data || [])
+        }
       } else if (activeTab === 'posts') {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('blog_posts')
           .select(`
             *,
             profiles(username)
           `)
           .order('created_at', { ascending: false })
-        setBlogPosts(data || [])
+
+        if (error) {
+          console.error('Blog posts loading error:', error)
+          setBlogPosts([])
+        } else {
+          setBlogPosts(data || [])
+        }
       } else if (activeTab === 'games') {
         // Şimdilik mock data, sonra Supabase'den gelecek
         const mockGames: Game[] = [

@@ -39,6 +39,8 @@ export default function DashboardPage() {
 
   const loadUserData = useCallback(async () => {
     try {
+      setLoading(true)
+
       // Kullanıcı istatistiklerini yükle
       const [postsResult, commentsResult, profileResult] = await Promise.all([
         supabase
@@ -56,11 +58,16 @@ export default function DashboardPage() {
           .single()
       ])
 
+      // Hata durumunda varsayılan değerler kullan
+      const totalPosts = postsResult.error ? 0 : (postsResult.count || 0)
+      const totalComments = commentsResult.error ? 0 : (commentsResult.count || 0)
+      const joinDate = profileResult.error ? new Date().toISOString() : (profileResult.data?.created_at || new Date().toISOString())
+
       setStats({
-        totalPosts: postsResult.count || 0,
-        totalComments: commentsResult.count || 0,
+        totalPosts,
+        totalComments,
         totalLikes: 0, // Şimdilik 0
-        joinDate: profileResult.data?.created_at || ''
+        joinDate
       })
 
       // Son aktiviteleri yükle
@@ -72,7 +79,7 @@ export default function DashboardPage() {
         .limit(5)
 
       const activities: RecentActivity[] = []
-      if (recentPosts.data) {
+      if (!recentPosts.error && recentPosts.data) {
         recentPosts.data.forEach(post => {
           activities.push({
             id: post.id,
