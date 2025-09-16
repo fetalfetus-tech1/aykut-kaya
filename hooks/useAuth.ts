@@ -35,7 +35,10 @@ export function useAuth() {
 
       if (existingProfile) {
         console.log('🔥 loadUserProfile: Setting user with profile')
-        setUser({ ...authUser, profile: existingProfile })
+        // State güncellemesini garantiye almak için setTimeout kullan
+        setTimeout(() => {
+          setUser({ ...authUser, profile: existingProfile })
+        }, 0)
         return
       }
 
@@ -58,14 +61,20 @@ export function useAuth() {
 
       if (newProfile) {
         console.log('🔥 loadUserProfile: Setting user with new profile')
-        setUser({ ...authUser, profile: newProfile })
+        setTimeout(() => {
+          setUser({ ...authUser, profile: newProfile })
+        }, 0)
       } else {
         console.error('🔥 loadUserProfile: Failed to create profile, setting user without profile')
-        setUser(authUser)
+        setTimeout(() => {
+          setUser(authUser)
+        }, 0)
       }
     } catch (error) {
       console.error('🔥 loadUserProfile: Exception:', error)
-      setUser(authUser)
+      setTimeout(() => {
+        setUser(authUser)
+      }, 0)
     }
   }
 
